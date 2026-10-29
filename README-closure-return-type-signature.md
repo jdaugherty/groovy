@@ -1,7 +1,7 @@
 # A closure's return type signature depends on what else is compiled
 
-This branch fixes a difference in the bytecode of statically compiled closures. There is no JIRA issue for it
-yet. This file only explains the problem and is not part of the fix.
+This branch fixes a difference in the bytecode of statically compiled closures. It is reported as
+[GROOVY-12550](https://issues.apache.org/jira/browse/GROOVY-12550). This file only explains the problem and is not part of the fix.
 
 ## The problem
 
@@ -26,7 +26,8 @@ Svc compiled together with Res:     public Res doCall()
 Svc compiled against a compiled Res: public Res<Up> doCall()
 ```
 
-Reproduced with Groovy 4.0.33, 5.1.3 and `master`.
+Reproduced with Groovy 4.0.33, 5.1.3 and `master`. A standalone reproducer is at
+[jdaugherty/groovy-closure-return-type-signature](https://github.com/jdaugherty/groovy-closure-return-type-signature).
 
 The same source compiles to a closure class with a different signature depending on what else is compiled.
 An incremental build that recompiles `Svc` without `Res` produces a closure class whose binary API differs
