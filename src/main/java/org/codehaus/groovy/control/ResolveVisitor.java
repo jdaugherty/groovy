@@ -428,6 +428,7 @@ public class ResolveVisitor extends ClassCodeExpressionTransformer {
             resolved = (!type.hasPackageName() && resolveNestedClass(type))
                     || resolveFromModule(type, testModuleImports)
                     || resolveFromCompileUnit(type)
+                    || (testModuleImports && !type.hasPackageName() && resolveFromDefaultPackage(type))
                     || (testDefaultImports && !type.hasPackageName() && resolveFromDefaultImports(type))
                     || resolveToOuter(type)
                     || (testStaticInnerClasses && type.hasPackageName() && resolveFromStaticInnerClasses(type));
@@ -772,6 +773,20 @@ public class ResolveVisitor extends ClassCodeExpressionTransformer {
         }
 
         return false;
+    }
+
+    /**
+     * Looks up a class of the default package on the class path for a class of the default package. It takes
+     * precedence over the default imports, as a class of a named package does for a class of the same package and
+     * as a class of the default package that is being compiled does.
+     */
+    private boolean resolveFromDefaultPackage(final ClassNode type) {
+        ModuleNode module = currentClass.getModule();
+        if (module == null || module.hasPackageName() || type instanceof ConstructedClassWithPackage
+                || type instanceof ConstructedNestedClass || type instanceof LowerCaseClass) {
+            return false;
+        }
+        return resolveToOuter(type);
     }
 
     protected boolean resolveToOuter(final ClassNode type) {
