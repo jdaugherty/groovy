@@ -8,7 +8,7 @@ branch, whose README explains the problem:
 |---|---|---|
 | GROOVY-10932: read pre-compiled trait helpers from bytecode | [`GROOVY-10932-5_1_X`](https://github.com/jdaugherty/groovy/blob/GROOVY-10932-5_1_X/README-GROOVY-10932.md) | [apache/groovy#3076](https://github.com/apache/groovy/pull/3076) |
 | GROOVY-12544: `InnerClasses` entries for nested classes outside the compilation unit | [`GROOVY-12544-5_1_X`](https://github.com/jdaugherty/groovy/blob/GROOVY-12544-5_1_X/README-GROOVY-12544.md) | [apache/groovy#3077](https://github.com/apache/groovy/pull/3077) |
-| Keep the type arguments of a closure's inferred return type | [`closure-return-type-signature-5_1_X`](https://github.com/jdaugherty/groovy/blob/closure-return-type-signature-5_1_X/README-closure-return-type-signature.md) | none yet, `master` fix on [`closure-return-type-signature`](https://github.com/jdaugherty/groovy/blob/closure-return-type-signature/README-closure-return-type-signature.md) |
+| Keep the type arguments of a closure's inferred return type | [`closure-return-type-signature-5_1_X`](https://github.com/jdaugherty/groovy/blob/closure-return-type-signature-5_1_X/README-closure-return-type-signature.md) | [GROOVY-12550](https://issues.apache.org/jira/browse/GROOVY-12550), `master` fix on [`closure-return-type-signature`](https://github.com/jdaugherty/groovy/blob/closure-return-type-signature/README-closure-return-type-signature.md) |
 
 This file is not part of any fix.
 
