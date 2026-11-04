@@ -854,6 +854,43 @@ returns a different object on each evaluation:
   same object. Before, the read came from one object and the write went to
   the next.
 
+### Groovy 6.0.1 — a default-package class on the class path can be resolved before the default imports (GROOVY-12555)
+
+In a compilation unit of the default package, a simple type name that the
+unit neither declares nor imports, and that no other unit of the same
+`CompilationUnit` declares, is resolved through the default imports
+(`java.lang`, `java.util`, `java.io`, `java.net`, `java.time`, `groovy.lang`,
+`groovy.util`, `BigInteger`, `BigDecimal`) before a class of the default
+package is looked up on the class path. A default-package `Factory` is
+therefore found while it is compiled together with its callers but lost to
+`groovy.util.Factory` once it has been compiled ahead of them, as in an
+incremental build, and the same source compiles to a different class. The
+new optimization option `defaultPackageFirst` moves that lookup, which also
+covers a `.groovy` source on the source path of the `GroovyClassLoader`,
+*before* the default imports, as it already is for a class of a named
+package, and as the Java Language Specification (§6.4.1) has a type of the
+same package, the unnamed package included, shadow a type imported on
+demand. An explicit star import still takes precedence, as elsewhere in
+Groovy. Groovy 7 makes this order the default.
+
+**Who is affected.** Nobody unless the option is set: 6.0.x resolves as
+6.0.0 did. Set it to `true`, through the system property
+`groovy.resolve.default.package.first=true`, a configuration script, or, in
+Gradle, `groovyOptions.optimizationOptions['defaultPackageFirst'] = true`,
+the only one of the three that Gradle passes on to the compiler, where an
+incremental build compiles default-package classes against previously
+compiled ones and the same source must compile to the same class as in a
+full build. With the option on, default-package code whose class path has a
+class, or a `.groovy` source, of the default package with the simple name of
+a default-import type uses that class instead of the default import. The
+`groovy` command uses the current directory as the class path when none is
+given, so a sibling `Node.groovy` or `Timer.groovy` in a directory of
+scripts then stands for that name in the other scripts, and the roots of a
+`GroovyScriptEngine` are source paths of the same kind. Each compilation
+unit of the default package then also pays one class-path lookup per
+default-import type it names, as a unit of a named package always has. The
+option is the only API change.
+
 ## The binary-compatibility check
 
 The [`subprojects/binary-compatibility/`](subprojects/binary-compatibility)
