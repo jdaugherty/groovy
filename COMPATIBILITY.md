@@ -988,7 +988,10 @@ covers a `.groovy` source on the source path of the `GroovyClassLoader`,
 package, and as the Java Language Specification (§6.4.1) has a type of the
 same package, the unnamed package included, shadow a type imported on
 demand. An explicit star import still takes precedence, as elsewhere in
-Groovy. Groovy 7 makes this order the default.
+Groovy. A compiled nested class named through its outer class is looked up
+the same way: with a compiled default-package `Proxy` that has a nested
+`Type`, `Proxy.Type` is that class and not `java.net.Proxy.Type`. Groovy 7
+makes this order the default.
 
 **Who is affected.** Nobody unless the option is set: 6.0.x resolves as
 6.0.0 did. Set it to `true`, through the system property
