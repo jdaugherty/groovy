@@ -1158,34 +1158,47 @@ package is looked up on the class path. A default-package `Factory` is
 therefore found while it is compiled together with its callers but lost to
 `groovy.util.Factory` once it has been compiled ahead of them, as in an
 incremental build, and the same source compiles to a different class. The
-new optimization option `defaultPackageFirst` moves that lookup, which also
-covers a `.groovy` source on the source path of the `GroovyClassLoader`,
-*before* the default imports, as it already is for a class of a named
-package, and as the Java Language Specification (§6.4.1) has a type of the
-same package, the unnamed package included, shadow a type imported on
-demand. An explicit star import still takes precedence, as elsewhere in
+new optimization option `defaultPackageFirst` looks up a compiled class of
+the default package *before* the default imports, as a class of a named
+package already is, and as the Java Language Specification (§6.4.1) has a
+type of the same package, the unnamed package included, shadow a type
+imported on demand. The new optimization option `defaultPackageSources` adds
+to that lookup the `.groovy` sources on the source path of the
+`GroovyClassLoader`, and the classes that loader has already compiled or
+loaded. An explicit star import still takes precedence, as elsewhere in
 Groovy. A compiled nested class named through its outer class is looked up
 the same way: with a compiled default-package `Proxy` that has a nested
 `Type`, `Proxy.Type` is that class and not `java.net.Proxy.Type`. Groovy 7
-makes this order the default.
+turns both options on by default.
 
-**Who is affected.** Nobody unless the option is set: 6.0.x resolves as
-6.0.0 did. Set it to `true`, through the system property
+**Who is affected.** Nobody unless the options are set: 6.0.x resolves as
+6.0.0 did. Set `defaultPackageFirst` to `true`, through the system property
 `groovy.resolve.default.package.first=true`, a configuration script, or, in
 Gradle, `groovyOptions.optimizationOptions['defaultPackageFirst'] = true`,
 the only one of the three that Gradle passes on to the compiler, where an
 incremental build compiles default-package classes against previously
 compiled ones and the same source must compile to the same class as in a
-full build. With the option on, default-package code whose class path has a
-class, or a `.groovy` source, of the default package with the simple name of
-a default-import type uses that class instead of the default import. The
-`groovy` command uses the current directory as the class path when none is
-given, so a sibling `Node.groovy` or `Timer.groovy` in a directory of
-scripts then stands for that name in the other scripts, and the roots of a
-`GroovyScriptEngine` are source paths of the same kind. Each compilation
-unit of the default package then also pays one class-path lookup per
-default-import type it names, as a unit of a named package always has. The
-option is the only API change.
+full build. Such a build does not need `defaultPackageSources`, since the
+classes it does not recompile are `.class` files in its output directory and
+its source directories are not on the compile class path. With
+`defaultPackageFirst` on, default-package code whose class path has a
+compiled class of the default package with the simple name of a
+default-import type uses that class instead of the default import. With
+`defaultPackageSources` on as well, through the system property
+`groovy.resolve.default.package.sources=true`, a configuration script, or
+`groovyOptions.optimizationOptions['defaultPackageSources'] = true`, a
+`.groovy` source of the default package does too: the `groovy` command uses
+the current directory as the class path when none is given, so a sibling
+`Node.groovy` or `Timer.groovy` in a directory of scripts then stands for
+that name in the other scripts. The roots of a `GroovyScriptEngine` are
+source paths of the same kind, and a script there that resolved a name to a
+default import is not recompiled when a source of that name appears in a
+root, so the same engine can give both answers until it is recreated. In a
+`GroovyShell` or `GroovyScriptEngine` that is reused, and in groovysh or the
+console, a name can also resolve to a default-package class compiled earlier
+by the same class loader. Each compilation unit of the default package then
+also pays one class-path lookup per default-import type it names, as a unit
+of a named package always has. The two options are the only API change.
 
 ## The binary-compatibility check
 

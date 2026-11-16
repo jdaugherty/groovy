@@ -1009,15 +1009,21 @@ public class ResolveVisitor extends ClassCodeExpressionTransformer {
      * Looks up a class of the default package on the class path for a class of the default package. It takes
      * precedence over the default imports, as a class of a named package does for a class of the same package and
      * as a class of the default package that is being compiled does, when the
-     * {@link CompilerConfiguration#DEFAULT_PACKAGE_FIRST} option is {@code true}; it is off by default. A miss
-     * leaves {@code type} untouched and is cached by the {@link ClassNodeResolver}, so the later
-     * {@link #resolveToOuter} of the same lookup is a no-op.
+     * {@link CompilerConfiguration#DEFAULT_PACKAGE_FIRST} option is {@code true}; it is off by default. Only a
+     * {@code .class} file is looked up, and a miss is not cached, so the later {@link #resolveToOuter} can still find
+     * a source, after the default imports, unless the {@link CompilerConfiguration#DEFAULT_PACKAGE_SOURCES} option is
+     * {@code true}. A source is then looked up as well, and a miss leaves {@code type} untouched and is cached by the
+     * {@link ClassNodeResolver}, so the later {@link #resolveToOuter} of the same lookup is a no-op.
      *
      * @param type the type to resolve
      * @return {@code true} if the type was resolved
      */
     private boolean resolveFromDefaultPackage(final ClassNode type) {
-        if (compilationUnit == null || !Boolean.TRUE.equals(compilationUnit.getConfiguration().getOptimizationOptions().get(CompilerConfiguration.DEFAULT_PACKAGE_FIRST))) {
+        if (compilationUnit == null) {
+            return false;
+        }
+        Map<String, Boolean> options = compilationUnit.getConfiguration().getOptimizationOptions();
+        if (!Boolean.TRUE.equals(options.get(CompilerConfiguration.DEFAULT_PACKAGE_FIRST))) {
             return false;
         }
         ModuleNode module = currentClass.getModule();
@@ -1025,7 +1031,17 @@ public class ResolveVisitor extends ClassCodeExpressionTransformer {
                 || type instanceof ConstructedNestedClass || type instanceof LowerCaseClass) {
             return false;
         }
-        return resolveToOuter(type);
+        if (Boolean.TRUE.equals(options.get(CompilerConfiguration.DEFAULT_PACKAGE_SOURCES))) {
+            return resolveToOuter(type);
+        }
+        if (classNodeResolver == null)
+            classNodeResolver = new ClassNodeResolver();
+        ClassNode cn = classNodeResolver.resolveClassFile(type.getName(), compilationUnit);
+        if (cn == null) {
+            return false;
+        }
+        type.setRedirect(cn);
+        return true;
     }
 
     /**

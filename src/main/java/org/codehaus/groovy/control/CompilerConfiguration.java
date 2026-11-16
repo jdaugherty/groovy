@@ -85,6 +85,19 @@ public class CompilerConfiguration {
     public static final String DEFAULT_PACKAGE_FIRST = "defaultPackageFirst";
 
     /**
+     * Option for including the {@code .groovy} sources on the source path of the Groovy class loader in the lookup
+     * that {@link #DEFAULT_PACKAGE_FIRST} enables, which then also takes in the classes the class loader has
+     * already compiled or loaded. Disabled by default, so that only the {@code .class} files of the default package
+     * are looked up before the default imports, and ignored unless {@link #DEFAULT_PACKAGE_FIRST} is enabled.
+     * Enable it, or set the system property {@code groovy.resolve.default.package.sources} to {@code true}, for a
+     * source of the default package to take the place of a default import as well, as it does by default from 7.0.
+     * Stored in {@link #getOptimizationOptions()} for consistency with other compiler feature flags.
+     *
+     * @since 6.0.1
+     */
+    public static final String DEFAULT_PACKAGE_SOURCES = "defaultPackageSources";
+
+    /**
      * Option for enabling ANTLR parser error recovery on the Parrot parser.
      * <p>
      * Disabled by default. When enabled (typically for IDE editing), the parser
@@ -644,6 +657,7 @@ public class CompilerConfiguration {
      *   <tr><td><code>groovy.attach.runtime.groovydoc</code></td><td>{@link #getOptimizationOptions}</td></tr>
      *   <tr><td><code>groovy.parser.error.recovery</code></td><td>{@link #getOptimizationOptions} / {@link #isErrorRecoveryEnabled}</td></tr>
      *   <tr><td><code>groovy.resolve.default.package.first</code></td><td>{@link #getOptimizationOptions}</td></tr>
+     *   <tr><td><code>groovy.resolve.default.package.sources</code></td><td>{@link #getOptimizationOptions}</td></tr>
      * </table>
      * </blockquote>
      * Additional language-compatibility system properties (not optimization options):
@@ -683,6 +697,7 @@ public class CompilerConfiguration {
         handleOptimizationOption(ERROR_RECOVERY, getSystemPropertySafe("groovy.parser.error.recovery"));
         handleOptimizationOption(RUNTIME_PACKAGE_CHECK, getSystemPropertySafe("groovy.runtime.package.check"));
         handleOptimizationOption(DEFAULT_PACKAGE_FIRST, getSystemPropertySafe("groovy.resolve.default.package.first"));
+        handleOptimizationOption(DEFAULT_PACKAGE_SOURCES, getSystemPropertySafe("groovy.resolve.default.package.sources"));
 
         if (getBooleanSafe("groovy.mem.stub")) {
             jointCompilationOptions = new HashMap<>(2);
@@ -1609,7 +1624,8 @@ public class CompilerConfiguration {
      * No entry or a true for that entry means to enable that optimization,
      * a false means the optimization is disabled.
      * Valid keys include {@code "all"}, {@code "int"}, {@link #INVOKEDYNAMIC},
-     * {@link #PARALLEL_PARSE}, {@link #GROOVYDOC}, {@link #RUNTIME_GROOVYDOC}, and {@link #DEFAULT_PACKAGE_FIRST}.
+     * {@link #PARALLEL_PARSE}, {@link #GROOVYDOC}, {@link #RUNTIME_GROOVYDOC}, {@link #DEFAULT_PACKAGE_FIRST},
+     * and {@link #DEFAULT_PACKAGE_SOURCES}.
      * For-in per-iteration capture (GROOVY-11792) is not an optimization option; use
      * {@link #setForInPerIterationCaptureEnabled(boolean)} instead.
      * @param options the options.
